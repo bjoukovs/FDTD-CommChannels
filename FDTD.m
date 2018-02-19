@@ -96,11 +96,11 @@ for i=t
             %Boundary conditions : left wall
             if j==1
                 if k==1
-                    %top left corner
+                    %bottom left corner
                     Ez(k,j) = Ez(k,j) + beta*Hy(1,2) - beta*Hx(2,1);
                     
                 elseif k==length(y)*2
-                    %bottom left corner
+                    %top left corner
                     Ez(k,j) = Ez(k,j) + beta*Hy(k,2) + beta*Hx(k-1,1);
                     
                 else
@@ -122,12 +122,13 @@ for i=t
                     
                 end
                 
-            %top wall
+            %bottom wall
             elseif k==1
                 Ez(k,j) = Ez(k,j) + beta*(Hy(k,j+1) - Hy(k,j-1)) - beta*Hx(2,j);
-            
+                %no other case because they were taken into account in the
+                %2 previous situations (right and left wall)
                 
-            %bottom wall
+            %top wall
             elseif k==length(y)*2
                 Ez(k,j) = Ez(k,j) + beta*(Hy(k,j+1) - Hy(k,j-1)) + beta*Hx(k-1,j);
                 
@@ -141,9 +142,9 @@ for i=t
     end
 
     %show movie
-    %hold on;
-    %surf(Ez(2:2:end,2:2:end))
-    %pause(0.1);
+    hold on;
+    surf(Ez(2:2:end,2:2:end))
+    pause(0.1);
 end
 
 %Remove +1/2 steps
