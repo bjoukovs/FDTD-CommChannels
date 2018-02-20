@@ -14,7 +14,7 @@ y0 = 0;
 xf = 1;
 yf = 1;
 
-x_step = lambda/20 %Accuracy
+x_step = lambda/10 %Accuracy
 
 iterations = 10;
 

@@ -1,5 +1,3 @@
-%WORKING START VERSION
-
 clear all;
 close all;
 format long
