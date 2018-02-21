@@ -56,7 +56,7 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
             for m=2:length(y)
 
                  if l~=x_source || m~=y_source
-                    Ez(m,l) = Ez(m,l) + beta(k,j)*(Hy(m,l) - Hy(m,l-1)) - beta(k,j)*(Hx(m,l)-Hx(m-1,l));
+                    Ez(m,l) = Ez(m,l) + beta(m,l)*(Hy(m,l) - Hy(m,l-1)) - beta(m,l)*(Hx(m,l)-Hx(m-1,l));
                  else
                      l,m
                  end
