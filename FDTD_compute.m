@@ -23,7 +23,8 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
     if show_movie==1
         fig1 = figure('Position',[0,0,200,500]);
         colormap(cm);
-        colorbar;
+        cb = colorbar;
+        cb.Limits = [-1 1]
         axis off;
         figure(2)
     end
@@ -56,7 +57,7 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
             for m=2:length(y)
 
                  if l~=x_source || m~=y_source
-                    Ez(m,l) = Ez(m,l) + beta(m,l)*(Hy(m,l) - Hy(m,l-1)) - beta(m,l)*(Hx(m,l)-Hx(m-1,l));
+                    Ez(m,l) = Ez(m,l) + beta(m-1,l-1)*(Hy(m,l) - Hy(m,l-1)) - beta(m-1,l-1)*(Hx(m,l)-Hx(m-1,l));
                  else
                      l,m
                  end

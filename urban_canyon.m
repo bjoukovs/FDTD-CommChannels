@@ -28,4 +28,4 @@ eps_rel(60,1:100) = ones(1,100)*1e6; %iron wall on x=50
 mu_rel(40,1:100) = ones(1,100)*5000;
 mu_rel(60,1:100) = ones(1,100)*5000;
 
-E = FDTD_compute(x,y,t,25,50,eps_rel,mu_rel,1,'')
+E = FDTD_compute(x,y,t,25,50,eps_rel,mu_rel,1,'line([0 100],[40 40]);line([0 100],[60 60])')
