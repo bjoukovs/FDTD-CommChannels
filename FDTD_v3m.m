@@ -2,6 +2,10 @@ clear all;
 close all;
 format long
 
+colormapfile = matfile('hotcoldmap.mat');
+cm = colormapfile.cm;
+cm = cm/255;
+
 %% CONSTANTS
 
 mu_0 = 4*pi*1e-7;
@@ -15,14 +19,14 @@ y0 = 0;
 xf = 1;
 yf = 1;
 
-x_step = lambda/15; %Accuracy
+x_step = lambda/20; %Accuracy
 %en-dessous de x_step = lambda/14 ça ne se propage plus
 
 iterations = 10;
 
 t0 = 0;
 t_step = x_step/c/10; %Stability (1D condition)
-tf = t0 + 1000*t_step;
+tf = t0 + 10000*t_step;
 
 
 
@@ -85,13 +89,15 @@ for i=1:length(t)
     end
 
     %show movie
-    %hold on;
+    %hold on; 
     %plot(i,Ez(50,50));
-    surf(Ez)
-    pause(0.1);
+    colormap(cm);
+    imagesc(Ez, [-1,1])
+    %surf(Ez)
+    pause(0.01);
 end
 
 imagesc(Ez)
-colormap hot; 
+
 
 
