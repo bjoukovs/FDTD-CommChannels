@@ -23,9 +23,9 @@ eps_rel = ones(length(y), length(x));
 mu_rel = ones(length(y), length(x));
 
 
-eps_rel(40,1:100) = ones(1,100)*1; %AT
+eps_rel(40,1:100) = ones(1,100)*1; %ATTENTION PAS 10^6 car c'est eps RELATIF
 eps_rel(60,1:100) = ones(1,100)*1; 
-mu_rel(40,1:100) = ones(1,100)*5000;
+mu_rel(40,1:100) = ones(1,100)*5000; %ici c'est bien la bonne valeur de mu relative
 mu_rel(60,1:100) = ones(1,100)*5000;
 
 E = FDTD_compute(x,y,t,25,50,eps_rel,mu_rel,1,'line([0 100],[40 40]);line([0 100],[60 60])')
