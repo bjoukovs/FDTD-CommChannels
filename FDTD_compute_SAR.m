@@ -1,4 +1,5 @@
-function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display)
+function [Ez,power] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display,R,xcenter,ycenter)
+    power=zeros(1,length(t)); %power in function of the time
 
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
@@ -56,11 +57,20 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
                  if l~=x_source || m~=y_source
                     Ez(m,l) = Ez(m,l) + beta(m-1,l-1)*(Hy(m,l) - Hy(m,l-1)) - beta(m-1,l-1)*(Hx(m,l)-Hx(m-1,l));
                  else
-                     l,m
+                     l,m;
                  end
-
+                 for x_index=1:length(x)
+                     for y_index=1:length(y)
+                         dist=sqrt((x(x_index)-xcenter)^2+(y(y_index)-ycenter)^2);
+                         if dist<=R
+                             power(i)=power(i)+Ez(m,l)^2*0.5/500; %remind the origin of 0.5/500
+                         end
+                     end
+                 end
+            
             end
         end
+        
         
         if show_movie==1
             figure(2)
@@ -69,12 +79,20 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
                 imagesc(Ez, [-1,1])
                 xlabel('x');
                 ylabel('y');
-                set(gca,'XTick',linspace(0,length(x),10)
-                set(gca,'XTickLabel',linspace(0,x(end),10)
-                ylim([y(1),y(end)]);
+                xticks(linspace(0,length(x)-1,10));
+                yticks(linspace(0,length(y)-1,10));
+                xticklabels( round(linspace(x(1),x(end),10),2) );
+                yticklabels( round(linspace(y(1),y(end),10),2) );
                 hold on;
                 %imagesc(eps_rel_draw);
                 eval(custom_display);
+                
+                %ADD A CIRCLE FOR SAR
+%                 theta = 0:pi/50:2*pi;
+%                 xunit = R * cos(theta) + xcenter;
+%                 yunit = R * sin(theta) + ycenter;
+%                 plot(xunit,yunit)
+%                viscircles([xcenter ycenter],R,'Color','b');
                 hold off;
                 colorbar;
             
@@ -87,12 +105,21 @@ function Ez = FDTD_compute(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,cus
                
             
             %Save movie
-            F(i) = getframe(gcf);
+            %F(i) = getframe(gcf);
             
         end
         
     end
     
-    fig = figure;
-    movie(fig,F,2)
+    %fig = figure;
+    %movie(fig,F,2)
+%     filename = "FDTD_"+datestr(datetime('now'),'ddmmyy_HH_MM')+".mp4"
+%     video = VideoWriter(char(filename),'MPEG-4');
+%     video.Quality = 90;
+%     open(video);
+%     for i=1:length(F)
+%        frame = F(i);
+%        writeVideo(video,frame);
+%     end
+%     close(video);
 end
