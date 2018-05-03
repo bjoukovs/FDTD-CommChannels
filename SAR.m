@@ -13,7 +13,7 @@ x_step = c/1e9/30; %Accuracy 1Ghz
 
 t0 = 0;
 t_step = x_step/c/10; %Stability (1D condition)
-tf = t0 + 1000*t_step;
+tf = t0 + 4*1000*t_step;
 
 x = x0:x_step:xf;
 y = y0:x_step:yf;
@@ -29,7 +29,7 @@ ycenter=yf/2;
 xsource=round((xcenter-R)/x_step)-1;
 ysource=round(ycenter/x_step);
 
-[E,power_free] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
+%[E,power_free] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
 
 for x_index=1:length(x)
     for y_index=1:length(y)
@@ -41,7 +41,23 @@ for x_index=1:length(x)
     end
 end
 
-[E,power_head] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
+[E,E_square_head] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
+sigma_brain=1.3;
+rho_brain=1.03;
+SAR_head=E_square_head*sigma_brain/rho_brain
 
-power_dissipated=power_free-power_head;
-plot(t,power_dissipated)
+%SAR for a Huawei P8 Lite: SAR=0.39 W/kg
+
+
+% power_dissipated=power_head;
+% figure;plot(t,power_dissipated)
+% title('Power dissipated in the brain, in function of time');
+% xlabel('Time [s]');
+% ylabel('Power [W]');
+% figure;plot(t,SAR_head)
+% title('SAR in function of time');
+% xlabel('Time [s]');
+% ylabel('SAR [W/kg]');
+
+%Make the mean between two times values where the electric field is totally present in the head
+%meanSAR=mean(SAR_head(1,601:1801))

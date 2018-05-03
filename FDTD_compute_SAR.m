@@ -1,6 +1,6 @@
-function [Ez,power] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display,R,xcenter,ycenter)
-    power=zeros(1,length(t)); %power in function of the time
-
+function [Ez,E_square_head] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display,R,xcenter,ycenter)
+    %E_head=zeros(1,length(t)); %power in function of the time
+    E_square_head=0;
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
     cm = cm/255;
@@ -28,6 +28,7 @@ function [Ez,power] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,mu_rel,sh
     
     
     for i=1:length(t)
+       i
 
        %source
        Ez(y_source,x_source) = sin(2*pi*1e9*t(i));
@@ -59,15 +60,12 @@ function [Ez,power] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,mu_rel,sh
                  else
                      l,m;
                  end
-                 for x_index=1:length(x)
-                     for y_index=1:length(y)
-                         dist=sqrt((x(x_index)-xcenter)^2+(y(y_index)-ycenter)^2);
-                         if dist<=R
-                             power(i)=power(i)+Ez(m,l)^2*0.5/500; %remind the origin of 0.5/500
-                         end
-                     end
+                 dist=sqrt((x(l)-xcenter)^2+(y(m)-ycenter)^2);
+                 if dist<=R
+                     E_square_head=E_square_head+(Ez(m,l)^2)*(x_step*y_step);%/length(t); %
+                     %ponderation factors: x_step*y_step=area of the pixel
+                     %                     length(t): to average over time
                  end
-            
             end
         end
         
