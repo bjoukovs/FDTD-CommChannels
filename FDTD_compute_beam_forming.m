@@ -1,8 +1,11 @@
-function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display)
+function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display,R)
+    %R=rayon du cercle
     
     coupe_temps=zeros(1,length(t)); %power at a specific place (x0,y0) in function of time;
     coupe_distance=zeros(1,length(y)); %power at a specific instant t0 on all the y's
+    coupe_circulaire=[];
 
+    matrix_power=zeros(length(y)+1,length(x)+1);
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
     cm = cm/255;
@@ -30,6 +33,7 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
     
     [n_sources,~]=size(sourca);
     p=1:n_sources;
+    eps=x_step/2;
     for i=1:length(t)
 
        %source
@@ -37,7 +41,7 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
 %            Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i));
 %        end
         
-        Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i));
+        Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i))/sqrt(length(sourca));
            
         %Update of Hx, Hy
         for j=1:length(x)
@@ -82,10 +86,17 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
                  if m==60 && l==60
                      coupe_temps(i)=(Ez(m,l).^2)*0.5;
                  end
+                 
+                 
+                 
             end
         end
         
-        if i==length(t)/4
+        matrix_power=matrix_power+(Ez.^2)/length(t); %average power at each point
+        
+        
+        
+        if i==round(length(t)/4)
             coupe_distance=(Ez(60,:).^2)*0.5;
         end
         
@@ -121,6 +132,17 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
         end
         
     end
+    for l=1:length(x)
+        for m=1:length(y)
+            dist=sqrt((l-sourca(floor(length(sourca)/2)+1,2))^2+(m-sourca(floor(length(sourca)/2)+1,1))^2); %odd number of sources
+            dist=dist*x_step; 
+            if dist<R+eps && dist>R-eps
+                 coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-sourca(floor(length(sourca)/2)+1,1),l-sourca(floor(length(sourca)/2)+1,2))];
+             end
+        end
+    end
+    
+    
     
     %fig = figure;
     %movie(fig,F,2)

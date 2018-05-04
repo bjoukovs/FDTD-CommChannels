@@ -1,5 +1,11 @@
-function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display)
+function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display,R)
+    %R=rayon du cercle
+    
+    coupe_temps=zeros(1,length(t)); %power at a specific place (x0,y0) in function of time;
+    coupe_distance=zeros(1,length(y)); %power at a specific instant t0 on all the y's
+    coupe_circulaire=[];
 
+    matrix_power=zeros(length(x),);
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
     cm = cm/255;
@@ -26,14 +32,16 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
     beta = (eps_rel).^-1 .*(t_step/eps_0/x_step);
     
     [n_sources,~]=size(sourca);
+    p=1:n_sources;
+    eps=x_step/2;
     for i=1:length(t)
 
        %source
 %        for p=1:n_sources
 %            Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i));
 %        end
-        p=1:n_sources;
-        Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i));
+        
+        Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i))/sqrt(length(sourca));
            
         %Update of Hx, Hy
         for j=1:length(x)
@@ -56,20 +64,40 @@ function [Ez,coupe_distance,coupe_temps] = FDTD_compute_beam_forming(x,y,t,sourc
         %Update of Ez
         for l=2:length(x)
             for m=2:length(y)
-                
-                 if ~(ismember(l,sourca(:,2))) || ~(ismember(m,sourca(:,1)))
-                    Ez(m,l) = Ez(m,l) + beta(m-1,l-1)*(Hy(m,l) - Hy(m,l-1)) - beta(m-1,l-1)*(Hx(m,l)-Hx(m-1,l));
-                 else
-                     l,m;
+               flag=0;
+               for a=1:n_sources
+                 if (l==sourca(a,2)) && (m==sourca(a,1))
+                    flag=1; %to tell if the point is a source
+                    break
                  end
+               end
+               if flag==1
+                   l,m;
+               else
+                   Ez(m,l) = Ez(m,l) + beta(m-1,l-1)*(Hy(m,l) - Hy(m,l-1)) - beta(m-1,l-1)*(Hx(m,l)-Hx(m-1,l));
+               end
+               
+%                  if ~(ismember(l,sourca(:,2))) || ~(ismember(m,sourca(:,1)))
+%                     Ez(m,l) = Ez(m,l) + beta(m-1,l-1)*(Hy(m,l) - Hy(m,l-1)) - beta(m-1,l-1)*(Hx(m,l)-Hx(m-1,l));
+%                  else
+%                      l,m;
+%                  end
                  
                  if m==60 && l==60
-                     coupe_temps(i)=Ez()
+                     coupe_temps(i)=(Ez(m,l).^2)*0.5;
+                 end
+                 
+                 
+                 
             end
         end
         
-        if i=length(t)/4
-            coupe_distance=Ez(60,:);
+        if i==round(length(t)/4)
+            coupe_distance=(Ez(60,:).^2)*0.5;
+            dist=sqrt((l-sourca(length(sourca)/2+1,2))^.2+(m-sourca(length(sourca)/2+1,1))^.2) %odd number of sources
+             if dist<R+eps && dist>R-eps
+                 coupe_circulaire()
+             end
         end
         
         if show_movie==1

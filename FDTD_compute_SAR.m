@@ -31,7 +31,7 @@ function [Ez,E_square_head] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,m
        i
 
        %source
-       Ez(y_source,x_source) = sin(2*pi*1e9*t(i));
+       Ez(y_source,x_source) = sqrt(2*3)*sin(2*pi*1e9*t(i));
 
         %Update of Hx, Hy
         for j=1:length(x)
@@ -62,7 +62,7 @@ function [Ez,E_square_head] = FDTD_compute_SAR(x,y,t,x_source,y_source,eps_rel,m
                  end
                  dist=sqrt((x(l)-xcenter)^2+(y(m)-ycenter)^2);
                  if dist<=R
-                     E_square_head=E_square_head+(Ez(m,l)^2)*(x_step*y_step);%/length(t); %
+                     E_square_head=E_square_head+(Ez(m,l)^2)*(x_step*y_step)/length(t); %
                      %ponderation factors: x_step*y_step=area of the pixel
                      %                     length(t): to average over time
                  end

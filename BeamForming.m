@@ -7,8 +7,8 @@ c=3e8;
 
 x0 = 0;
 y0 = 0;
-xf = 1/2;
-yf = 1/2;
+xf = 1;
+yf = 1;
 
 f=2.45e9;
 x_step = c/f/30; %Accuracy 1Ghz
@@ -26,18 +26,27 @@ eps_rel = ones(length(y), length(x));
 mu_rel = ones(length(y), length(x));
 
 %sources
-yl = 50;
-xl = 40;
-nb_sources = 6;
+y1 = 5;
+x1 = 40;
+nb_sources = 7;
 sourca = zeros(nb_sources,2);
+
 spacing=floor((c/f)/4/x_step);
+
+% for i=1:nb_sources
+    
+%sourca=[y1,x1];
+
 for i = 1: nb_sources
-    sourca(i,:) = [yl, xl + spacing*i];
+    sourca(i,:) = [y1, x1 + spacing*i];
 end
 
+R=0.5;
+[E, coupe_distance, coupe_temps, coupe_circulaire]=FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,0,'',R);
 
-[E, coupe_distance, coupe_temps]=FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,0,'');
-
-figure;plot(y,coupe_distance);
+figure;plot(y,coupe_distance(1:end-1));title('Power with y coordinate at a fixed time');
+xlabel('Vertical coordinate y [m]');ylabel('Received power [W]');
 figure;plot(t,coupe_temps);
+xlabel('Time [s]');ylabel('Received power [W]');
+figure;plot(coupe_circulaire(:,2),coupe_circulaire(:,1)) %TO ANALYZE
 
