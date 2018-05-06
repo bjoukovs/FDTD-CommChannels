@@ -1,8 +1,6 @@
 function [Ez,Fading_matrix1,Fading_matrix3, Path_loss] = FDTD_compute_forfastfading(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display)
 
-    Fading_matrix1 = zeros(30,30);
-    Fading_matrix3 = zeros(30,30);
-    Path_loss = zeros(250,1);
+    
 
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;

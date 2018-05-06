@@ -29,7 +29,8 @@ ycenter=yf/2;
 xsource=round((xcenter-R)/x_step)-1;
 ysource=round(ycenter/x_step);
 
-%[E,power_free] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
+sources = {};
+sources{1} = [xsource, ysource, 1, 0];
 
 for x_index=1:length(x)
     for y_index=1:length(y)
@@ -41,7 +42,21 @@ for x_index=1:length(x)
     end
 end
 
-[E,E_square_head] = FDTD_compute_SAR(x,y,t,xsource,ysource,eps_rel,mu_rel,0,'',R,xcenter,ycenter);
+
+simParams = struct;
+simParams.R = R;
+simParams.xcenter = xcenter;
+simParams.ycenter = ycenter;
+simParams.startTime = 500;
+
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel,'graphics', @sar_graphics,...
+'sources', sources, 'movie', 'show', 'special', 'SAR', 'others', simParams);
+
+
+Ez = outputs.Ez;
+E_square_head = outputs.E_square_head;
+
+
 sigma_brain=1.3;
 rho_brain=1.03;
 SAR_head=E_square_head*sigma_brain/rho_brain
@@ -61,3 +76,18 @@ SAR_head=E_square_head*sigma_brain/rho_brain
 
 %Make the mean between two times values where the electric field is totally present in the head
 %meanSAR=mean(SAR_head(1,601:1801))
+
+
+
+
+function sar_graphics(fig)
+    figure(fig);
+    xcenter = 1;
+    ycenter = 1;
+    R = 0.16;
+    c=3e8;
+    x_step = c/1e9/30; %Accuracy 1Ghz
+
+    
+    viscircles([xcenter/x_step ycenter/x_step],R/x_step,'LineWidth',0.2);
+end

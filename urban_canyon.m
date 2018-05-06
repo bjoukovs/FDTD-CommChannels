@@ -28,4 +28,5 @@ eps_rel(60,1:100) = ones(1,100)*1;
 mu_rel(40,1:100) = ones(1,100)*5000; %ici c'est bien la bonne valeur de mu relative
 mu_rel(60,1:100) = ones(1,100)*5000;
 
+% METTRE A JOUR CETTE COMMANDE (se baser par exemple sur knife_edge.m)
 E = FDTD_compute(x,y,t,25,50,eps_rel,mu_rel,1,'line([0 100],[40 40]);line([0 100],[60 60])')

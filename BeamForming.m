@@ -16,7 +16,7 @@ x_step = c/f/30; %Accuracy 1Ghz
 
 t0 = 0;
 t_step = x_step/c/10; %Stability (1D condition)
-tf = t0 + 2000*t_step;
+tf = t0 + 100*t_step;
 
 x = x0:x_step:xf;
 y = y0:x_step:yf;
@@ -29,7 +29,7 @@ mu_rel = ones(length(y), length(x));
 y1 = 5;
 x1 = 40;
 nb_sources = 7;
-sourca = zeros(nb_sources,2);
+sources = {}
 
 spacing=floor((c/f)/4/x_step);
 
@@ -38,15 +38,30 @@ spacing=floor((c/f)/4/x_step);
 %sourca=[y1,x1];
 
 for i = 1: nb_sources
-    sourca(i,:) = [y1, x1 + spacing*i];
+    sources{i} = [y1, x1 + spacing*i, 1, 0];
 end
 
-R=0.5;
-[E, coupe_distance, coupe_temps, coupe_circulaire]=FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,0,'',R);
+simulation_parameters = struct;
+simulation_parameters.R = 0.5;
+simulation_parameters.startTime = 50;
+simulation_parameters.centerX = x1+ nb_sources/2*spacing;
+simulation_parameters.centerY = y1;
 
-figure;plot(y,coupe_distance(1:end-1));title('Power with y coordinate at a fixed time');
-xlabel('Vertical coordinate y [m]');ylabel('Received power [W]');
+
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel,'graphics', @bf_graphics, 'sources', sources, ...
+    'movie', 'none', 'special','beamforming', 'others',simulation_parameters);
+
+
+coupe_temps = outputs.coupe_temps;
+coupe_circulaire = outputs.coupe_circulaire;
+
+
 figure;plot(t,coupe_temps);
 xlabel('Time [s]');ylabel('Received power [W]');
 figure;plot(coupe_circulaire(:,2),coupe_circulaire(:,1)) %TO ANALYZE
+
+
+function bf_graphics(fig)
+    figure(fig);
+end
 

@@ -29,31 +29,18 @@ t = t0:t_step:tf;
 eps_rel = ones(length(y), length(x));
 mu_rel = ones(length(y), length(x));
 
-eps_rel_max = 81;   %eau de mer chap 7 cours 3eme
 
-for i = 1:x_step:epaisseur
-   %les murs horizontaux
-   eps_rel(i,:) = eps_rel_max - (eps_rel_max/epaisseur)*(i-1);
-   if i == epaisseur
-       eps_rel(i,:) =  1;
-   end
-   eps_rel(i + (500 - epaisseur),:) = 1 + (eps_rel_max/epaisseur)*i;
-   if i == epaisseur
-       eps_rel(i + (500 - epaisseur),:) = eps_rel_max;
-   end
-   %les murs verticaux
-   eps_rel(:,i) = eps_rel_max - (eps_rel_max/epaisseur)*(i-1);
-   if i == epaisseur
-       eps_rel(:,i) =  1;
-   end
-   eps_rel(:,i + (500 - epaisseur)) = 1 + (eps_rel_max/epaisseur)*i;
-   if i == epaisseur
-       eps_rel(:,i + (500 - epaisseur)) = eps_rel_max;
-   end
-end
+sources = {}
+sources{1} = [250,75,1,0];
 
 
-[E, Fading_matrix1, Fading_matrix3, Path_loss] = FDTD_compute_forfastfading(x,y,t,250,75,eps_rel,mu_rel,0,'');%box : 'line([50 100],[50 50]);line([50 50],[50 100]);line([50 100],[100 100]);line([100 100],[50 100]);')
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel,0,'graphics',@fastfading_graphics,...
+    'sources', sources, 'special', 'fastfading', 'movie', 'none');
+
+Ez = outputs.Ez;
+Fading_matrix1 = outputs.Fading_matrix1;
+Fading_matrix3 = outputs.Fading_matrix3;
+Path_loss = outputs.Path_loss;
 
 %% Doppler shift
 
@@ -67,3 +54,14 @@ plot(temps,10*log10(Fading_matrix3(12,:)))
 %% Path loss
 figure(3)
 plot(0:v:249,10*log10(Path_loss(:,1)))
+
+
+
+function fastfading_graphics(fig)
+    figure(fig);
+    
+    line([50 100],[50 50]);
+    line([50 50],[50 100]);
+    line([50 100],[100 100]);
+    line([100 100],[50 100]);
+end

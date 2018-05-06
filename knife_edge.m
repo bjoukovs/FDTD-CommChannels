@@ -25,4 +25,20 @@ mu_rel = ones(length(y), length(x));
 eps_rel(1:50,90) = ones(50,1)*1; %iron wall on x=90, %ATTENTION PAS 10^6 car c'est eps RELATIF
 mu_rel(1:50,90) = ones(50,1)*5000; %ici c'est bien la bonne valeur de mu relative
 
-E = FDTD_compute(x,y,t,75,40,eps_rel,mu_rel,1,'line([50 50],[0 90]);title("Knife edge model")');
+
+
+%Definition of the sources
+sources = {};
+sources{1} = [70, 40, 1, 0];
+
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel,'graphics', @knife_edge_graphics, 'sources', sources, 'movie', 'show');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Special function for the knife edge plot
+function knife_edge_graphics(fig)
+    figure(fig);
+    line([50 50],[0 90]);
+    title("Knife edge model"); 
+end
