@@ -160,8 +160,8 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
             fig = figure(1);
             colormap(cm);
             imagesc(Ez, [-1,1])
-            xlabel('x');
-            ylabel('y');
+            xlabel({'x (m)';strcat('time: ', sprintf('%0.5e',time(t)), ' s')});
+            ylabel('y (m)');
             xticks(linspace(0,length(x)-1,10));
             yticks(linspace(0,length(y)-1,10));
             xticklabels( round(linspace(x(1),x(end),10),2) );
