@@ -30,4 +30,4 @@ mu_rel = ones(length(y), length(x));
 sources = {};
 sources{1} = [round(length(x)/2), round(length(y)/2), 1, 0];
 
-outputs = computeFDTD(x,y,t,eps_rel,mu_rel, 'sources', sources, 'movie', 'save');
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel, 'sources', sources, 'movie', 'show');

@@ -166,9 +166,9 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        if savePower == 1
            if t>others.startTime && t<others.stopTime
                
-              measureTime = others.stopTime - others.startTime;
+               measureTime = others.stopTime - others.startTime;
               powerMask = others.mask;
-              E_squared = E_squared + powerMask .* (Ez.^2/measureTime);
+              E_squared = E_squared + E.^2/measureTime;
               
            end
        end
@@ -277,9 +277,6 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     if strcmp(special, 'SAR')
         outputs.E_square_head = E_square_head;
     end
-   if savePower == 1
-      outputs.power = E_squared;          
-   end
 
 
 end
