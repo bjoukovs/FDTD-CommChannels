@@ -57,6 +57,15 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        savePower = 1; 
     end
     
+    verifConv = 0;
+    if strcmp(special,'verifConv')
+        verifConv = 1;
+    end
+    
+    attenuation = 0;
+    if strcmp(special,'attenuation')
+        attenuation = 1;
+    end
     
     %Setting up the color map
     colormapfile = matfile('hotcoldmap.mat');
@@ -116,7 +125,11 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     %Power measurement
     E_squared = zeros(size(Ez));
     
-   
+    %Convergence verification
+    maxiE=zeros(1,length(time));
+    
+    %Attenuation
+    %verifE = zeros(1,length(y)/2);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -220,6 +233,18 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
            end
        end
        
+       %%%% CONVERGENCE ANALYSIS %%%%
+       if verifConv==1
+           maxiE(t)=max(max(Ez));
+       end
+       
+       %%%% ATTENUATION ANALYSIS %%%%
+       if attenuation==1
+           if t == others.tverif
+            %Vertical cut
+            verifE=Ez(sources{1}(2):end,sources{1}(1));
+           end
+       end
         
     end
     
@@ -280,7 +305,12 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
    if savePower == 1
       outputs.power = E_squared;          
    end
-
+   if verifConv == 1
+       outputs.maxiE=maxiE;
+   end
+   if attenuation == 1
+       outputs.verifE=verifE;
+   end
 
 end
 
