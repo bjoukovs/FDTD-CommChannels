@@ -65,6 +65,10 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     attenuation = 0;
     if strcmp(special,'attenuation')
         attenuation = 1;
+        count = 1;
+        verifE = [];
+        verifPoynting = [];
+        posy_ls=[];
     end
     
     %Setting up the color map
@@ -128,9 +132,6 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     %Convergence verification
     maxiE=zeros(1,length(time));
     
-    %Attenuation
-    %verifE = zeros(1,length(y)/2);
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %%%%% ACTUAL SIMULATION %%%%%%
@@ -138,10 +139,15 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        t
 
        %%%% Updating the sources %%%%
-       for src = 1:length(sources)
-          Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
+       if attenuation == 0
+           for src = 1:length(sources)
+              Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
+           end
+       else % if attenuation checking, use a cosine to start at amplitude 1
+            for src = 1:length(sources)
+              Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*cos(2*pi*f*time(t) + sources{src}(4)); 
+            end
        end
-
 
         %%%%% Updating the H fields %%%%
         
@@ -239,10 +245,16 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        end
        
        %%%% ATTENUATION ANALYSIS %%%%
-       if attenuation==1
-           if t == others.tverif
-            %Vertical cut
-            verifE=Ez(sources{1}(2):end,sources{1}(1));
+       if attenuation == 1
+           if t == others.tverif(count) %count was initialized to 1
+               count = count+1;
+               posy = 3e8*t*t_step; %x=c*time where time=t*tstep because t is the index here
+               indexy = sources{1}(2)+floor(posy/y_step);
+               verifE=[verifE abs(Ez(indexy,sources{1}(1)))]; %abs not necessary since we measure amplitude, but just to be sure
+               verifPoynting=[verifPoynting (Ez(indexy,sources{1}(1)))^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
+               posy_ls=[posy_ls posy];
+%             %Vertical cut
+%             verifE=Ez(sources{1}(2):end,sources{1}(1));
            end
        end
         
@@ -310,6 +322,8 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
    end
    if attenuation == 1
        outputs.verifE=verifE;
+       outputs.posy_ls=posy_ls;
+       outputs.verifPoynting=verifPoynting;
    end
 
 end
