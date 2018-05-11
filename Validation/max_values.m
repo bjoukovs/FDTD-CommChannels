@@ -37,9 +37,9 @@ outputs = computeFDTD(x,y,t,eps_rel,mu_rel, 'sources', sources, 'movie', 'none',
 sinE=sources{1}(3)*sin(2*pi*f*t + sources{1}(4));
 
 maxiE=outputs.maxiE;
-figure;plot(t,maxiE);hold on;
-plot(t,sinE,'.');
+figure;plot(t,maxiE,'.');hold on;
+plot(t,sinE);
 title('Source amplitude and maximal values of the electric field')
-legend('Max E','Source amplitude');
+legend('Maximal electric field value','Source amplitude');
 xlabel('Time [s]');
 ylabel('Amplitude [V/m]')
