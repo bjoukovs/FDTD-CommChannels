@@ -33,7 +33,7 @@ function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_fo
     
     [n_sources,~]=size(sourca);
     p=1:n_sources;
-    eps=x_step/2;
+    eps=x_step/4;
     for i=1:length(t)
 
        %source
@@ -92,7 +92,7 @@ function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_fo
             end
         end
         
-        matrix_power=matrix_power+(Ez.^2)/length(t); %average power at each point
+        matrix_power=matrix_power+(Ez.^2)/(2*120*pi)/length(t); %average power DENSITY at each point
         
         
         
@@ -134,8 +134,8 @@ function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_fo
     end
     for l=1:length(x)
         for m=1:length(y)
-            dist=sqrt((l-sourca(floor(length(sourca)/2)+1,2))^2+(m-sourca(floor(length(sourca)/2)+1,1))^2); %odd number of sources
-            dist=dist*x_step; 
+            dist=sqrt(((l-sourca(floor(length(sourca)/2)+1,2))*x_step)^2+((m-sourca(floor(length(sourca)/2)+1,1))*y_step)^2); %odd number of sources
+            %dist=dist*x_step; 
             if dist<R+eps && dist>R-eps
                  coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-sourca(floor(length(sourca)/2)+1,1),l-sourca(floor(length(sourca)/2)+1,2))];
              end
