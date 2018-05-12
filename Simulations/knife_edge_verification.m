@@ -85,7 +85,7 @@ nu = h*sqrt(2/lambda*(1/d1 + 1/d2));
 
 plot(nu,Lke);
 
-
+% Custom graphics function to show the wall
 function myGraphics(fig)
     figure(fig);
     line([200 200],[200 400]);

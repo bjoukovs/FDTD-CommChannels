@@ -267,7 +267,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     
     %%%% Saving the movie %%%%
     if strcmp(show_movie,'save')
-        filename = 'FDTD_'+datestr(datetime('now'),'ddmmyy_HH_MM')+'.mp4'
+        filename = "FDTD_"+datestr(datetime('now'),'ddmmyy_HH_MM')+".mp4"
         video = VideoWriter(char(filename),'MPEG-4');
         video.Quality = 90;
         open(video);
