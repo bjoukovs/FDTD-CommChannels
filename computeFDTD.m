@@ -253,8 +253,6 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
                verifE=[verifE abs(Ez(indexy,sources{1}(1)))]; %abs not necessary since we measure amplitude, but just to be sure
                verifPoynting=[verifPoynting (Ez(indexy,sources{1}(1)))^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
                posy_ls=[posy_ls posy];
-%             %Vertical cut
-%             verifE=Ez(sources{1}(2):end,sources{1}(1));
            end
        end
         
