@@ -71,6 +71,16 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         posy_ls=[];
     end
     
+    urbancanyon = 0;
+    if strcmp(special,'urbancanyon')
+        urbancanyon = 1;
+        count = 1;
+        verifE = [];
+        verifPoynting = [];
+        posy_ls=[];
+        flag=0;
+    end
+    
     %Setting up the color map
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
@@ -139,7 +149,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        t
 
        %%%% Updating the sources %%%%
-       if attenuation == 0
+       if attenuation == 0 && urbancanyon == 0
            for src = 1:length(sources)
               Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
            end
@@ -209,7 +219,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
             %custom graphics
             feval(spgraphics,fig);
             hold off;
-            colorbar;
+            %colorbar;
             drawnow;
             
             %Saving movie frame
@@ -252,6 +262,27 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
                indexy = sources{1}(2)+floor(posy/y_step);
                verifE=[verifE abs(Ez(indexy,sources{1}(1)))]; %abs not necessary since we measure amplitude, but just to be sure
                verifPoynting=[verifPoynting (Ez(indexy,sources{1}(1)))^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
+               posy_ls=[posy_ls posy];
+           end
+       end
+       
+      if urbancanyon == 1
+           if t == others.tverif(count) %count was initialized to 1
+               count = count+1;
+               posy = 3e8*t*t_step; %x=c*time where time=t*tstep because t is the index here
+               indexy = sources{1}(2)+floor(posy/y_step);
+               tempE=abs(Ez(indexy,sources{1}(1)));
+               if flag==1
+                   tempE=0;
+                   for p=sources{1}(1)-1:sources{1}(1)+1
+                       for q=sources{1}(2):sources{1}(2)
+                           tempE = tempE + abs(Ez(p,q))/9; %average power
+                       end
+                   end
+               end
+               flag=1; %so that the first time it does not do the average
+               verifE=[verifE tempE]; %abs not necessary since we measure amplitude, but just to be sure
+               verifPoynting=[verifPoynting tempE^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
                posy_ls=[posy_ls posy];
            end
        end
@@ -319,6 +350,11 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        outputs.maxiE=maxiE;
    end
    if attenuation == 1
+       outputs.verifE=verifE;
+       outputs.posy_ls=posy_ls;
+       outputs.verifPoynting=verifPoynting;
+   end
+   if urbancanyon == 1
        outputs.verifE=verifE;
        outputs.posy_ls=posy_ls;
        outputs.verifPoynting=verifPoynting;
