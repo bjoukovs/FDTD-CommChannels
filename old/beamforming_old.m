@@ -12,7 +12,7 @@ y0 = 0;
 xf = 2.5;%2.5*1;
 yf = 2.5;%2.5*1;
 
-f=2.45e9;
+f=1e9;
 x_step = c/f/30; %Accuracy 1Ghz
 %en-dessous de x_step = lambda/14 ça ne se propage plus
 

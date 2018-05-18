@@ -153,7 +153,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
            for src = 1:length(sources)
               Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
            end
-       else % if attenuation checking, use a cosine to start at amplitude 1
+       else % if attenuation checking, use a cosine to start at amplitude 1a
             for src = 1:length(sources)
               Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*cos(2*pi*f*time(t) + sources{src}(4)); 
             end
@@ -285,8 +285,31 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
                verifPoynting=[verifPoynting tempE^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
                posy_ls=[posy_ls posy];
            end
-       end
+      end
         
+       
+          %%% BEAM FORMING %%%
+        if t==round(length(time)/4)
+            if strcmp(special,'beamforming')
+                %R = others.R;
+                R=time(t)*c;
+                %R=R/t_step;
+                matrix_power = matrix_power/(length(time)-others.startTime);
+
+                eps=x_step/2;
+
+                for l=1:length(x)
+                    for m=1:length(y)
+                        dist=sqrt((l-others.centerX)^2+(m-others.centerY)^2); %odd number of sources
+                        dist=dist*x_step; 
+                        if dist<R+eps && dist>R-eps
+                             coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-others.centerX, l-others.centerY)];
+                         end
+                    end
+                end
+            end
+        end
+    
     end
     
     
@@ -306,28 +329,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         end
         close(video);
     end
-    
-    
-    %%% BEAM FORMING %%%
-    if strcmp(special,'beamforming')
-        R = others.R;
-        matrix_power = matrix_power/(length(time)-others.startTime);
-        
-        eps=x_step/2;
-        
-        for l=1:length(x)
-            for m=1:length(y)
-                dist=sqrt((l-others.centerX)^2+(m-others.centerY)^2); %odd number of sources
-                dist=dist*x_step; 
-                if dist<R+eps && dist>R-eps
-                     coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-others.centerX, l-others.centerY)];
-                 end
-            end
-        end
-    end
-    
-    
-        
+            
     %Output structure
     outputs.Ez = Ez;
     if strcmp(special, 'beamforming')
