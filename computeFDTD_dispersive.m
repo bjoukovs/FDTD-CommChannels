@@ -1,4 +1,4 @@
-function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
+function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,sigma,varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %This function computes the Yee algorithm
     % - x is the vector of x positions
@@ -100,8 +100,12 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     Hx = zeros(length(y), length(x));
     Hy = zeros(length(y), length(x));
     Ez = zeros(length(y)+1, length(x)+1);
+    
     alpha = (mu_rel).^-1 .*(t_step/mu_0/x_step);
     beta = (eps_rel).^-1 .*(t_step/eps_0/x_step);
+    
+    beta_lossy = beta ./ ( 1 + (sigma*t_step)./(2*eps_rel*eps_0) );
+    beta_lossy_E = (1 - (sigma*t_step)./(2*eps_rel*eps_0)) ./ (1 + (sigma*t_step)./(2*eps_rel*eps_0));
     
     %Creating a mask for the sources positions
     sources_mask = ones(size(Ez));
@@ -162,7 +166,18 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         
         Hy_diff_x = Hy(2:end,2:end) - Hy(2:end,1:end-1);
         Hx_diff_y = Hx(2:end,2:end) - Hx(1:end-1,2:end);
-        Ez(2:end-1,2:end-1) = Ez(2:end-1,2:end-1) + sources_mask(2:end-1,2:end-1).*(beta(1:end-1,1:end-1).*Hy_diff_x - beta(1:end-1,1:end-1).*Hx_diff_y);
+        Ez(2:end-1,2:end-1) = beta_lossy_E(1:end-1,1:end-1).*Ez(2:end-1,2:end-1) + sources_mask(2:end-1,2:end-1).*(beta_lossy(1:end-1,1:end-1).*Hy_diff_x - beta(1:end-1,1:end-1).*Hx_diff_y);
+        
+        %Reupdating the sources
+            if attenuation == 0
+               for src = 1:length(sources)
+                  Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
+               end
+           else % if attenuation checking, use a cosine to start at amplitude 1
+                for src = 1:length(sources)
+                  Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*cos(2*pi*f*time(t) + sources{src}(4)); 
+                end
+           end
 
         %%%% SAR ANALYSIS %%%%
        if SAR==1
@@ -198,7 +213,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        if strcmp(show_movie,'show') || strcmp(show_movie,'save')
             fig = figure(1);
             colormap(cm);
-            imagesc(Ez, [-1,1])
+            imagesc(Ez, [-10,10])
             xlabel({'x (m)';strcat('time: ', sprintf('%0.5e',time(t)), ' s (iteration = ', sprintf('%d',t), ')')});
             ylabel('y (m)');
             xticks(linspace(0,length(x)-1,10));
