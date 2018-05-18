@@ -1,4 +1,4 @@
-function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display,R)
+function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_forming(x,y,t,sourca,eps_rel,mu_rel,show_movie,custom_display,R,delta)
     %R=rayon du cercle
     
     coupe_temps=zeros(1,length(t)); %power at a specific place (x0,y0) in function of time;
@@ -41,8 +41,13 @@ function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_fo
 %            Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i));
 %        end
         
-        Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i))/sqrt(length(sourca));
-           
+        %Ez(sourca(p,1),sourca(p,2))=sin(2*pi*1e9*t(i))/sqrt(length(sourca));
+         Ez(sourca(1,1),sourca(1,2))=sin(2*pi*1e9*t(i) + 0*delta)/sqrt(length(sourca));
+         Ez(sourca(2,1),sourca(2,2))=sin(2*pi*1e9*t(i) + 1*delta)/sqrt(length(sourca));
+         Ez(sourca(3,1),sourca(3,2))=sin(2*pi*1e9*t(i) + 2*delta)/sqrt(length(sourca));
+         Ez(sourca(4,1),sourca(4,2))=sin(2*pi*1e9*t(i) + 3*delta)/sqrt(length(sourca));
+         Ez(sourca(5,1),sourca(5,2))=sin(2*pi*1e9*t(i) + 4*delta)/sqrt(length(sourca));
+    
         %Update of Hx, Hy
         for j=1:length(x)
             for k=1:length(y)
@@ -111,11 +116,12 @@ function [Ez,coupe_distance,coupe_temps,coupe_circulaire] = FDTD_compute_beam_fo
                 %yticks(linspace(0,length(y)-1,10));
                 %xticklabels( round(linspace(x(1),x(end),10),2) );
                 %yticklabels( round(linspace(y(1),y(end),10),2) );
-                %hold on;
+                hold on;
                 %imagesc(eps_rel_draw);
                 eval(custom_display);
-                %hold off;
+                hold off;
                 colorbar;
+                drawnow;
             
             %draw subplot for colorbar
                 %subplot(1,2,2, 'position', [0.85 0.05 0.1 0.9]);

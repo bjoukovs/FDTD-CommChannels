@@ -32,7 +32,7 @@ sources{1} = [round(length(x)/2), round(length(y)/2), 1, 0];
 
 simParams.tverif=1:50:length(t)+1; %attention indexes, not real times
 
-outputs = computeFDTD(x,y,t,eps_rel,mu_rel, 'sources', sources, 'movie', 'none','special','attenuation','others',simParams);
+outputs = computeFDTD(x,y,t,eps_rel,mu_rel, 'sources', sources, 'movie', 'show','special','attenuation','others',simParams);
 
 verifE=outputs.verifE;
 verifPoynting=outputs.verifPoynting;
