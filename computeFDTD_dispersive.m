@@ -1,4 +1,4 @@
-function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
+function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,sigma,varargin)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %This function computes the Yee algorithm
     % - x is the vector of x positions
@@ -71,16 +71,6 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         posy_ls=[];
     end
     
-    urbancanyon = 0;
-    if strcmp(special,'urbancanyon')
-        urbancanyon = 1;
-        count = 1;
-        verifE = [];
-        verifPoynting = [];
-        posy_ls=[];
-        flag=0;
-    end
-    
     %Setting up the color map
     colormapfile = matfile('hotcoldmap.mat');
     cm = colormapfile.cm;
@@ -110,8 +100,12 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     Hx = zeros(length(y), length(x));
     Hy = zeros(length(y), length(x));
     Ez = zeros(length(y)+1, length(x)+1);
+    
     alpha = (mu_rel).^-1 .*(t_step/mu_0/x_step);
     beta = (eps_rel).^-1 .*(t_step/eps_0/x_step);
+    
+    beta_lossy = beta ./ ( 1 + (sigma*t_step)./(2*eps_rel*eps_0) );
+    beta_lossy_E = (1 - (sigma*t_step)./(2*eps_rel*eps_0)) ./ (1 + (sigma*t_step)./(2*eps_rel*eps_0));
     
     %Creating a mask for the sources positions
     sources_mask = ones(size(Ez));
@@ -149,11 +143,11 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        t
 
        %%%% Updating the sources %%%%
-       if attenuation == 0 && urbancanyon == 0
+       if attenuation == 0
            for src = 1:length(sources)
               Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
            end
-       else % if attenuation checking, use a cosine to start at amplitude 1a
+       else % if attenuation checking, use a cosine to start at amplitude 1
             for src = 1:length(sources)
               Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*cos(2*pi*f*time(t) + sources{src}(4)); 
             end
@@ -172,7 +166,18 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         
         Hy_diff_x = Hy(2:end,2:end) - Hy(2:end,1:end-1);
         Hx_diff_y = Hx(2:end,2:end) - Hx(1:end-1,2:end);
-        Ez(2:end-1,2:end-1) = Ez(2:end-1,2:end-1) + sources_mask(2:end-1,2:end-1).*(beta(1:end-1,1:end-1).*Hy_diff_x - beta(1:end-1,1:end-1).*Hx_diff_y);
+        Ez(2:end-1,2:end-1) = beta_lossy_E(1:end-1,1:end-1).*Ez(2:end-1,2:end-1) + sources_mask(2:end-1,2:end-1).*(beta_lossy(1:end-1,1:end-1).*Hy_diff_x - beta(1:end-1,1:end-1).*Hx_diff_y);
+        
+        %Reupdating the sources
+            if attenuation == 0
+               for src = 1:length(sources)
+                  Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*sin(2*pi*f*time(t) + sources{src}(4)); 
+               end
+           else % if attenuation checking, use a cosine to start at amplitude 1
+                for src = 1:length(sources)
+                  Ez(sources{src}(2), sources{src}(1)) = sources{src}(3)*cos(2*pi*f*time(t) + sources{src}(4)); 
+                end
+           end
 
         %%%% SAR ANALYSIS %%%%
        if SAR==1
@@ -208,7 +213,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        if strcmp(show_movie,'show') || strcmp(show_movie,'save')
             fig = figure(1);
             colormap(cm);
-            imagesc(Ez, [-1,1])
+            imagesc(Ez, [-10,10])
             xlabel({'x (m)';strcat('time: ', sprintf('%0.5e',time(t)), ' s (iteration = ', sprintf('%d',t), ')')});
             ylabel('y (m)');
             xticks(linspace(0,length(x)-1,10));
@@ -219,7 +224,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
             %custom graphics
             feval(spgraphics,fig);
             hold off;
-            %colorbar;
+            colorbar;
             drawnow;
             
             %Saving movie frame
@@ -265,51 +270,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
                posy_ls=[posy_ls posy];
            end
        end
-       
-      if urbancanyon == 1
-           if t == others.tverif(count) %count was initialized to 1
-               count = count+1;
-               posy = 3e8*t*t_step; %x=c*time where time=t*tstep because t is the index here
-               indexy = sources{1}(2)+floor(posy/y_step);
-               tempE=abs(Ez(indexy,sources{1}(1)));
-               if flag==1
-                   tempE=0;
-                   for p=sources{1}(1)-1:sources{1}(1)+1
-                       for q=sources{1}(2):sources{1}(2)
-                           tempE = tempE + abs(Ez(p,q))/9; %average power
-                       end
-                   end
-               end
-               flag=1; %so that the first time it does not do the average
-               verifE=[verifE tempE]; %abs not necessary since we measure amplitude, but just to be sure
-               verifPoynting=[verifPoynting tempE^2/(120*pi)]; %S=|E|^2/(2*Z0) in the far field
-               posy_ls=[posy_ls posy];
-           end
-      end
         
-       
-          %%% BEAM FORMING %%%
-        if t==round(length(time)/4)
-            if strcmp(special,'beamforming')
-                %R = others.R;
-                R=time(t)*c;
-                %R=R/t_step;
-                matrix_power = matrix_power/(length(time)-others.startTime);
-
-                eps=x_step/2;
-
-                for l=1:length(x)
-                    for m=1:length(y)
-                        dist=sqrt((l-others.centerX)^2+(m-others.centerY)^2); %odd number of sources
-                        dist=dist*x_step; 
-                        if dist<R+eps && dist>R-eps
-                             coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-others.centerX, l-others.centerY)];
-                         end
-                    end
-                end
-            end
-        end
-    
     end
     
     
@@ -319,7 +280,7 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
     
     %%%% Saving the movie %%%%
     if strcmp(show_movie,'save')
-        filename = 'FDTD_'+datestr(datetime('now'),'ddmmyy_HH_MM')+'.mp4'
+        filename = "FDTD_"+datestr(datetime('now'),'ddmmyy_HH_MM')+".mp4"
         video = VideoWriter(char(filename),'MPEG-4');
         video.Quality = 90;
         open(video);
@@ -329,7 +290,28 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
         end
         close(video);
     end
-            
+    
+    
+    %%% BEAM FORMING %%%
+    if strcmp(special,'beamforming')
+        R = others.R;
+        matrix_power = matrix_power/(length(time)-others.startTime);
+        
+        eps=x_step/2;
+        
+        for l=1:length(x)
+            for m=1:length(y)
+                dist=sqrt((l-others.centerX)^2+(m-others.centerY)^2); %odd number of sources
+                dist=dist*x_step; 
+                if dist<R+eps && dist>R-eps
+                     coupe_circulaire=[coupe_circulaire;matrix_power(m,l) atan2(m-others.centerX, l-others.centerY)];
+                 end
+            end
+        end
+    end
+    
+    
+        
     %Output structure
     outputs.Ez = Ez;
     if strcmp(special, 'beamforming')
@@ -352,11 +334,6 @@ function outputs = computeFDTD(x,y,time,eps_rel,mu_rel,varargin)
        outputs.maxiE=maxiE;
    end
    if attenuation == 1
-       outputs.verifE=verifE;
-       outputs.posy_ls=posy_ls;
-       outputs.verifPoynting=verifPoynting;
-   end
-   if urbancanyon == 1
        outputs.verifE=verifE;
        outputs.posy_ls=posy_ls;
        outputs.verifPoynting=verifPoynting;
