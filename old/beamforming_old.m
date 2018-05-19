@@ -12,7 +12,7 @@ y0 = 0;
 xf = 2.5;%2.5*1;
 yf = 2.5;%2.5*1;
 
-f=2.45e9;
+f=1e9;%2.45e9;
 x_step = c/f/30; %Accuracy 1Ghz
 %en-dessous de x_step = lambda/14 ça ne se propage plus
 
@@ -26,6 +26,8 @@ t = t0:t_step:tf;
 
 eps_rel = ones(length(y), length(x));
 mu_rel = ones(length(y), length(x));
+mu_rel(floor(length(y)/2) - 5,floor(length(x)/2)-30:floor(length(x)/2)+30)= 5000;
+
 lambda = c/f;
 spacing=floor(lambda/4/x_step);
 %delta for phi = 45°
@@ -34,7 +36,7 @@ spacing=floor(lambda/4/x_step);
 %delta = -2*pi/4;
 % %delta for phi = 90°
 % delta = 0;
-phi = 75;
+phi = 90;%330;%20;%70;%250;90;
 delta = (2*pi/lambda)*spacing*cos(deg2rad(phi));
 x1 = round(length(x)/2) - 5*spacing;
 y1 = round(length(y)/2);
