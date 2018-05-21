@@ -1,4 +1,4 @@
-function [Ez,Fading_matrix1,Fading_matrix3, Path_loss] = FDTD_compute_forfastfading(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display)
+function [Ez,Fading_matrix1,Fading_matrix3, Path_loss, Fading_matrix1_begin, Fading_matrix2, Fading_matrix4] = FDTD_compute_forfastfading(x,y,t,x_source,y_source,eps_rel,mu_rel,show_movie,custom_display)
 
     
 
@@ -20,6 +20,14 @@ function [Ez,Fading_matrix1,Fading_matrix3, Path_loss] = FDTD_compute_forfastfad
     Ez = zeros(length(y)+1, length(x)+1);
     alpha = (mu_rel).^-1 .*(t_step/mu_0/x_step);
     beta = (eps_rel).^-1 .*(t_step/eps_0/x_step);
+    
+    Fading_matrix1=zeros(30,30);
+    Fading_matrix3=zeros(30,30);
+    Path_loss=zeros(250,1);
+    
+    Fading_matrix1_begin=zeros(30,30);
+    Fading_matrix2=zeros(30,30);
+    Fading_matrix4=zeros(30,30);
 
     %show color bar only
     if show_movie==1
@@ -67,10 +75,28 @@ function [Ez,Fading_matrix1,Fading_matrix3, Path_loss] = FDTD_compute_forfastfad
             end
         end
 
-
-        %zone1
+        
+        if i>150 && i<=200
+            %zone1
+            Fading_matrix1_begin(:,:) = Fading_matrix1(:,:)+((Ez(250 + 25 : 250 + 25 + 30 -1,250 - 15 : 250 + 15 -1)).^2) * (0.5/500);
+            
+        end
+        
+        if i>450 && i<=550
+            %zone2
+            Fading_matrix2(:,:) = Fading_matrix1(:,:)+((Ez(500-50-15 : 500-50-15,250 - 15 : 250 + 15 -1)).^2) * (0.5/500);
+            
+        end
+        
+        if i>3000 && i<=4500
+            Fading_matrix4(:,:) = Fading_matrix1(:,:)+((Ez(500-50-15 : 500-50-15,400 - 15 : 400 + 15 -1)).^2) * (0.5/500);
+        end
+       
+        
         if i>1500 && i<=2000
+            %zone1
             Fading_matrix1(:,:) = Fading_matrix1(:,:)+((Ez(250 + 25 : 250 + 25 + 30 -1,250 - 15 : 250 + 15 -1)).^2) * (0.5/500);
+            %zone3
             Fading_matrix3(:,:) = Fading_matrix3(:,:)+((Ez(400 + 25 : 400 + 25 + 30 -1,50 - 15 : 50 + 15 -1)).^2) * (0.5/500);
             Path_loss(:,:) = Path_loss(:,:)+((Ez(251 : 500, 251)).^2) * (0.5/500);
         end
@@ -90,5 +116,5 @@ function [Ez,Fading_matrix1,Fading_matrix3, Path_loss] = FDTD_compute_forfastfad
 
     end
 
-    surf(Fading_matrix3);
+    %surf(Fading_matrix3);
 end
